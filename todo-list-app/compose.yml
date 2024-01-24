@@ -1,0 +1,34 @@
+version: '3.10'
+name: todo-list
+
+services:
+  db:
+    image: postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db/postgres/:/var/lib/postgresql/data
+
+  backend:
+    container_name: django-todo-list
+    build: .
+    command: python src/manage.py runserver 0.0.0.0:8000
+    stdin_open: true
+    tty: true
+    restart: on-failure
+    volumes:
+      - .:/app
+    ports:
+      - '8000:8000'
+      - '8999:8999'
+    environment:
+      - POSTGRES_NAME=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - db
